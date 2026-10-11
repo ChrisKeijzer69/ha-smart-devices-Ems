@@ -12,3 +12,7 @@ STATUS_PAD = "/api/apparaat/status"
 
 # De portal ververst per halve minuut; vaker vragen heeft geen zin.
 SCAN_INTERVAL = timedelta(seconds=30)
+
+VERSIE = "0.2.0"          # gelijk houden met manifest.json
+KAART_BESTAND = "smart-devices-ems-huis.js"
+KAART_URL = f"/{DOMAIN}/{KAART_BESTAND}"

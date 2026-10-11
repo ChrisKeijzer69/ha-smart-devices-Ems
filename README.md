@@ -17,6 +17,23 @@ De integratie **leest alleen**. Ze stuurt niets naar je installatie.
 
 Trek je de sleutel in de portal in, dan vraagt Home Assistant vanzelf om een nieuwe.
 
+## Kaart "Nu in huis"
+
+De integratie brengt de huistekening uit de portal mee als dashboardkaart: het huis met de stroom
+van zon, accu, net, auto en boiler. Je hoeft niets extra te installeren.
+
+Dashboard bewerken → *Kaart toevoegen* → zoek **Smart Devices EMS: nu in huis**. Of in YAML:
+
+```yaml
+type: custom:smart-devices-ems-huis
+titel: Nu in huis        # optioneel
+zon: false               # optioneel, als je geen zonnepanelen hebt
+apparaat: <device_id>    # optioneel, alleen bij meer dan één installatie
+```
+
+Zie je de kaart na een update niet? Ververs de pagina (in de app: *Instellingen → Companion-app →
+Debuggen → Frontend-cache wissen*).
+
 ## Sensoren
 
 | Groep | Sensoren |

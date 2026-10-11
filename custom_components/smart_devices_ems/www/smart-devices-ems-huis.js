@@ -8,7 +8,9 @@
 // kleuren van achtergrond en tekst uit het HA-thema, gegevens uit de sensoren van
 // deze integratie (gevonden op translation_key, dus taalonafhankelijk), en de
 // label-vakjes iets breder (6,3 px per letter in plaats van 5,8): het HA-lettertype
-// is breder dan dat van de portal.
+// is breder dan dat van de portal. Het bestand is bewust puur ASCII (\uXXXX voor
+// tekens als de middenpunt): HA levert het zonder charset en dan kan een browser
+// het als Latin-1 lezen.
 
 const DOMEIN = "smart_devices_ems";
 const ACTIE = {
@@ -23,7 +25,7 @@ const AUTO_PIL = {
 };
 const NS = "http://www.w3.org/2000/svg";
 
-// ── Rekenregels (kopie van huisStroom.js) ────────────────────────────────────
+// -- Rekenregels (kopie van huisStroom.js) ------------------------------------
 function stromen({ pv = 0, huis = 0, auto = 0, boiler = 0, bat = 0, grid = 0 }) {
   const bron = { zon: Math.max(0, pv), accu: Math.max(0, -bat), net: Math.max(0, grid) };
   const vraag = {
@@ -87,7 +89,7 @@ function fmtW(w) {
 }
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-// ── Draden en paden (zelfde coördinaten als HuisStroom.vue) ──────────────────
+// -- Draden en paden (zelfde coordinaten als HuisStroom.vue) ------------------
 const KAST = [187, 178];
 const ALLE_DRADEN = {
   zon: [[172, 92], [172, 160]],
@@ -109,7 +111,7 @@ function pad(van, naar) {
   return padCache[k];
 }
 
-// ── Uit de sensoren van Home Assistant ───────────────────────────────────────
+// -- Uit de sensoren van Home Assistant ---------------------------------------
 function vindEntiteiten(hass, deviceId) {
   const per = {};
   let apparaat = deviceId;
@@ -150,7 +152,7 @@ function leesStand(hass, ent, config) {
     accuKleur: ACTIE[actie] ?? ACTIE.wacht,
     heeftZon: config.zon !== false,
     heeftAuto, heeftBoiler,
-    autoNaam: slim && autoSoc != null ? `Auto · ${Math.round(autoSoc)} %` : "Auto",
+    autoNaam: slim && autoSoc != null ? `Auto \u00b7 ${Math.round(autoSoc)} %` : "Auto",
     autoPil: (slim && AUTO_PIL[tekst("auto_status")]) || (auto > 50 ? "laadt" : "wacht"),
     autoGeschat: heeftAuto && !slim,
     boilerPil: boiler > 50 ? "warmt op" : "uit",
@@ -160,7 +162,7 @@ function leesStand(hass, ent, config) {
   };
 }
 
-// ── De kaart ─────────────────────────────────────────────────────────────────
+// -- De kaart -----------------------------------------------------------------
 class SmartDevicesEmsHuis extends HTMLElement {
   static getStubConfig() { return {}; }
   static getConfigElement() { return document.createElement("smart-devices-ems-huis-editor"); }
@@ -219,11 +221,11 @@ class SmartDevicesEmsHuis extends HTMLElement {
     this._draden = draden;
 
     const onder = [];
-    if (s.heeftAuto) onder.push({ naam: s.autoNaam, x: 6, waarde: (s.autoGeschat && s.auto > 0 ? "≈ " : "") + fmtW(s.auto),
+    if (s.heeftAuto) onder.push({ naam: s.autoNaam, x: 6, waarde: (s.autoGeschat && s.auto > 0 ? "\u2248 " : "") + fmtW(s.auto),
       pil: s.autoPil, kleur: s.auto > 50 ? ACTIE.auto : ACTIE.wacht });
     onder.push({ naam: "Accu", x: 100, waarde: fmtW(s.bat),
       pil: s.bat > 50 ? "laadt" : s.bat < -50 ? "levert" : "wacht", kleur: s.accuKleur });
-    if (s.heeftBoiler) onder.push({ naam: "Boiler" + (s.temp != null ? ` · ${Math.round(s.temp)} °C` : ""), x: 140, dy: -246,
+    if (s.heeftBoiler) onder.push({ naam: "Boiler" + (s.temp != null ? ` \u00b7 ${Math.round(s.temp)} \u00b0C` : ""), x: 140, dy: -246,
       waarde: fmtW(s.boiler), pil: s.boilerPil, kleur: s.boiler > 50 ? ACTIE.boiler : ACTIE.wacht });
     onder.push({ naam: "Net", x: 290, waarde: fmtW(s.grid),
       pil: s.grid > 50 ? "afname" : s.grid < -50 ? "terug" : "geen",
@@ -295,7 +297,7 @@ class SmartDevicesEmsHuis extends HTMLElement {
     <rect x="100" y="196" width="44" height="40" rx="5" style="fill: var(--k-card); stroke: var(--k-line3)" />
     <rect x="103" y="${199 + 34 - accuHoogte}" width="38" height="${accuHoogte}" rx="3" fill="${s.accuKleur}" />
     <text x="122" y="221" font-size="12" font-weight="700" text-anchor="middle" class="cijfer"
-          style="fill: ${accuHoogte > 20 ? "#fff" : "var(--k-ink)"}">${s.soc != null ? Math.round(s.soc) + "%" : "—"}</text>
+          style="fill: ${accuHoogte > 20 ? "#fff" : "var(--k-ink)"}">${s.soc != null ? Math.round(s.soc) + "%" : "\u2014"}</text>
     ${s.heeftBoiler ? `<g>
       <defs><clipPath id="${this._clip}"><rect x="183" y="99" width="16" height="24" rx="7" /></clipPath></defs>
       <path d="M202 117 H210 V122" fill="none" stroke-width="3" stroke-linecap="round" style="stroke: var(--k-line3)" />
@@ -434,7 +436,7 @@ svg { width: 100%; height: auto; display: block; font-family: inherit; }
 @media (prefers-reduced-motion: reduce) { .mix-deel, .boiler-golf, .tv-beeld { animation: none; } }
 `;
 
-// ── Instelscherm in de dashboard-editor ──────────────────────────────────────
+// -- Instelscherm in de dashboard-editor --------------------------------------
 class SmartDevicesEmsHuisEditor extends HTMLElement {
   setConfig(config) { this._config = { ...config }; this._render(); }
   set hass(hass) { this._hass = hass; this._render(); }

@@ -26,13 +26,19 @@ Dashboard bewerken → *Kaart toevoegen* → zoek **Smart Devices EMS: nu in hui
 
 ```yaml
 type: custom:smart-devices-ems-huis
-titel: Nu in huis        # optioneel
-zon: false               # optioneel, als je geen zonnepanelen hebt
-apparaat: <device_id>    # optioneel, alleen bij meer dan één installatie
+titel: Nu in huis
 ```
 
-Zie je de kaart na een update niet? Ververs de pagina (in de app: *Instellingen → Companion-app →
-Debuggen → Frontend-cache wissen*).
+Extra instellingen, alleen als je ze nodig hebt:
+
+- `zon: false` als je geen zonnepanelen hebt;
+- `apparaat:` met het apparaat-id, alleen bij meer dan één gekoppelde installatie (kies hem
+  liever in de visuele editor).
+
+Zie je "Custom element doesn't exist"? Herstart Home Assistant na de installatie of update en
+ververs de pagina (in de app: *Instellingen → Companion-app → Debuggen → Frontend-cache wissen*).
+Helpt dat niet, voeg de kaart dan zelf toe als bron: *Instellingen → Dashboards → menu → Bronnen →
+Bron toevoegen*, URL `/smart_devices_ems/smart-devices-ems-huis.js`, type *JavaScript-module*.
 
 ## Sensoren
 

@@ -26,3 +26,9 @@ def test_versie_gelijk_aan_manifest():
     import json
     m = json.loads((ROOT / "custom_components/smart_devices_ems/manifest.json").read_text())
     assert m["version"] == VERSIE
+
+
+def test_kaart_is_ascii():
+    # HA levert het bestand zonder charset; met niet-ASCII-tekens kan een browser
+    # het als Latin-1 lezen (gezien op een iPad, 11 okt 2026).
+    (ROOT / "custom_components/smart_devices_ems/www/smart-devices-ems-huis.js").read_bytes().decode("ascii")

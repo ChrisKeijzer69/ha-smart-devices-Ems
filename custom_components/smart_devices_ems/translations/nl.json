@@ -1,0 +1,150 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Koppel je EMS",
+        "description": "Maak in de portal onder Instellingen → Apparaten koppelen een sleutel aan en plak hem hier.",
+        "data": {
+          "sleutel": "Sleutel",
+          "adres": "Adres van de portal"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nieuwe sleutel",
+        "description": "De sleutel werkt niet meer (ingetrokken?). Maak in de portal een nieuwe aan.",
+        "data": {
+          "sleutel": "Sleutel"
+        }
+      }
+    },
+    "error": {
+      "sleutel_ongeldig": "De portal herkent deze sleutel niet.",
+      "niet_bereikbaar": "De portal is niet bereikbaar."
+    },
+    "abort": {
+      "already_configured": "Deze installatie is al gekoppeld.",
+      "reauth_successful": "Nieuwe sleutel opgeslagen.",
+      "andere_installatie": "Deze sleutel hoort bij een andere installatie."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "vermogen_zon": {
+        "name": "Zon"
+      },
+      "vermogen_net": {
+        "name": "Net"
+      },
+      "vermogen_accu": {
+        "name": "Accu vermogen"
+      },
+      "vermogen_huis": {
+        "name": "Huis"
+      },
+      "vermogen_auto": {
+        "name": "Auto laden"
+      },
+      "vermogen_boiler": {
+        "name": "Boiler vermogen"
+      },
+      "accu_stand": {
+        "name": "Accu"
+      },
+      "auto_stand": {
+        "name": "Auto accu"
+      },
+      "auto_status": {
+        "name": "Laadpaal",
+        "state": {
+          "kabel_los": "Kabel los",
+          "aangesloten": "Aangesloten",
+          "laadt": "Laadt",
+          "vol": "Vol",
+          "wacht_op_zon": "Wacht op zon",
+          "wacht": "Wacht"
+        }
+      },
+      "boiler_temperatuur": {
+        "name": "Boiler temperatuur"
+      },
+      "prijs_nu": {
+        "name": "Stroomprijs nu"
+      },
+      "prijs_terug_nu": {
+        "name": "Terugleverprijs nu"
+      },
+      "prijs_over_een_uur": {
+        "name": "Stroomprijs over een uur"
+      },
+      "prijs_laagst_vandaag": {
+        "name": "Laagste prijs vandaag"
+      },
+      "prijs_hoogst_vandaag": {
+        "name": "Hoogste prijs vandaag"
+      },
+      "prijs_laagst_vandaag_om": {
+        "name": "Laagste prijs vandaag om"
+      },
+      "prijs_hoogst_vandaag_om": {
+        "name": "Hoogste prijs vandaag om"
+      },
+      "ai_nu": {
+        "name": "AI nu"
+      },
+      "ai_nu_actie": {
+        "name": "AI actie",
+        "state": {
+          "zon": "Laden met zon",
+          "net": "Laden uit net",
+          "levert": "Levert",
+          "wacht": "Wacht",
+          "onderhoud": "Onderhoud"
+        }
+      },
+      "ai_straks": {
+        "name": "AI straks"
+      },
+      "ai_straks_om": {
+        "name": "AI straks om"
+      },
+      "vandaag_zon": {
+        "name": "Zon vandaag"
+      },
+      "vandaag_net_afname": {
+        "name": "Netafname vandaag"
+      },
+      "vandaag_net_terug": {
+        "name": "Teruglevering vandaag"
+      },
+      "vandaag_accu_in": {
+        "name": "Accu geladen vandaag"
+      },
+      "vandaag_accu_uit": {
+        "name": "Accu ontladen vandaag"
+      },
+      "vandaag_huis": {
+        "name": "Huis vandaag"
+      },
+      "vandaag_auto": {
+        "name": "Auto vandaag"
+      },
+      "vandaag_boiler": {
+        "name": "Boiler vandaag"
+      },
+      "besparing_vandaag": {
+        "name": "Besparing vandaag"
+      },
+      "data_leeftijd": {
+        "name": "Leeftijd gegevens"
+      }
+    },
+    "binary_sensor": {
+      "verouderd": {
+        "name": "Gegevens verouderd"
+      },
+      "sturing_aan": {
+        "name": "Slimme sturing"
+      }
+    }
+  }
+}

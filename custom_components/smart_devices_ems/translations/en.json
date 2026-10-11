@@ -1,0 +1,150 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect your EMS",
+        "description": "Create a key in the portal under Settings → Connect devices and paste it here.",
+        "data": {
+          "sleutel": "Key",
+          "adres": "Portal address"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New key",
+        "description": "The key no longer works (revoked?). Create a new one in the portal.",
+        "data": {
+          "sleutel": "Key"
+        }
+      }
+    },
+    "error": {
+      "sleutel_ongeldig": "The portal does not recognise this key.",
+      "niet_bereikbaar": "Cannot reach the portal."
+    },
+    "abort": {
+      "already_configured": "This installation is already connected.",
+      "reauth_successful": "New key saved.",
+      "andere_installatie": "This key belongs to a different installation."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "vermogen_zon": {
+        "name": "Solar power"
+      },
+      "vermogen_net": {
+        "name": "Grid power"
+      },
+      "vermogen_accu": {
+        "name": "Battery power"
+      },
+      "vermogen_huis": {
+        "name": "House power"
+      },
+      "vermogen_auto": {
+        "name": "EV charging power"
+      },
+      "vermogen_boiler": {
+        "name": "Boiler power"
+      },
+      "accu_stand": {
+        "name": "Battery"
+      },
+      "auto_stand": {
+        "name": "EV battery"
+      },
+      "auto_status": {
+        "name": "Charger",
+        "state": {
+          "kabel_los": "Disconnected",
+          "aangesloten": "Connected",
+          "laadt": "Charging",
+          "vol": "Charged",
+          "wacht_op_zon": "Waiting for sun",
+          "wacht": "Waiting"
+        }
+      },
+      "boiler_temperatuur": {
+        "name": "Boiler temperature"
+      },
+      "prijs_nu": {
+        "name": "Electricity price"
+      },
+      "prijs_terug_nu": {
+        "name": "Feed-in price"
+      },
+      "prijs_over_een_uur": {
+        "name": "Price in one hour"
+      },
+      "prijs_laagst_vandaag": {
+        "name": "Lowest price today"
+      },
+      "prijs_hoogst_vandaag": {
+        "name": "Highest price today"
+      },
+      "prijs_laagst_vandaag_om": {
+        "name": "Lowest price today at"
+      },
+      "prijs_hoogst_vandaag_om": {
+        "name": "Highest price today at"
+      },
+      "ai_nu": {
+        "name": "AI now"
+      },
+      "ai_nu_actie": {
+        "name": "AI action",
+        "state": {
+          "zon": "Charging from solar",
+          "net": "Charging from grid",
+          "levert": "Discharging",
+          "wacht": "Idle",
+          "onderhoud": "Maintenance"
+        }
+      },
+      "ai_straks": {
+        "name": "AI next"
+      },
+      "ai_straks_om": {
+        "name": "AI next at"
+      },
+      "vandaag_zon": {
+        "name": "Solar today"
+      },
+      "vandaag_net_afname": {
+        "name": "Grid import today"
+      },
+      "vandaag_net_terug": {
+        "name": "Grid export today"
+      },
+      "vandaag_accu_in": {
+        "name": "Battery charged today"
+      },
+      "vandaag_accu_uit": {
+        "name": "Battery discharged today"
+      },
+      "vandaag_huis": {
+        "name": "House today"
+      },
+      "vandaag_auto": {
+        "name": "EV today"
+      },
+      "vandaag_boiler": {
+        "name": "Boiler today"
+      },
+      "besparing_vandaag": {
+        "name": "Savings today"
+      },
+      "data_leeftijd": {
+        "name": "Data age"
+      }
+    },
+    "binary_sensor": {
+      "verouderd": {
+        "name": "Data stale"
+      },
+      "sturing_aan": {
+        "name": "Smart control"
+      }
+    }
+  }
+}

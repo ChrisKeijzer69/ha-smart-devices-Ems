@@ -35,10 +35,12 @@ Extra instellingen, alleen als je ze nodig hebt:
 - `apparaat:` met het apparaat-id, alleen bij meer dan één gekoppelde installatie (kies hem
   liever in de visuele editor).
 
-Zie je "Custom element doesn't exist"? Herstart Home Assistant na de installatie of update en
-ververs de pagina (in de app: *Instellingen → Companion-app → Debuggen → Frontend-cache wissen*).
-Helpt dat niet, voeg de kaart dan zelf toe als bron: *Instellingen → Dashboards → menu → Bronnen →
-Bron toevoegen*, URL `/smart_devices_ems/smart-devices-ems-huis.js`, type *JavaScript-module*.
+De integratie zet de kaart zelf bij je dashboardbronnen (*Instellingen → Dashboards → Bronnen*).
+Had je hem daar al met de hand toegevoegd, dan neemt ze die over. Zie je na een update toch
+"Custom element doesn't exist"? Herstart Home Assistant en ververs de pagina (in de app:
+*Instellingen → Companion-app → Debuggen → Frontend-cache wissen*). Gebruik je dashboards in
+YAML-modus, voeg de kaart dan zelf toe onder `lovelace: resources:` met URL
+`/smart_devices_ems/smart-devices-ems-huis.js` en type `module`.
 
 ## Sensoren
 

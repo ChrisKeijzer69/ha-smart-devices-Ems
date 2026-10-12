@@ -24,4 +24,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "$(git log -1 --format=%B "$GITHUB_REF_NAME" | grep -v -e '^Co-Authored-By:' -e '^Claude-Session:')"
+          # De releasetekst is de tekst van de (geannoteerde) tag.
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          notes=$(git for-each-ref "refs/tags/$GITHUB_REF_NAME" --format='%(contents)')
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "${notes:-Versie $GITHUB_REF_NAME}"

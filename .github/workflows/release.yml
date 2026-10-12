@@ -1,0 +1,27 @@
+name: Release
+
+# Een tag vX.Y.Z pushen maakt een GitHub-release, zodat HACS een versienummer
+# toont in plaats van een commit. De tag moet gelijk zijn aan de versie in
+# manifest.json (en dus aan VERSIE in const.py, zie tests/test_kaart.py).
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag gelijk aan manifest
+        run: |
+          versie=$(python3 -c "import json;print(json.load(open('custom_components/smart_devices_ems/manifest.json'))['version'])")
+          test "v$versie" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME, manifest $versie"; exit 1; }
+      - name: Release maken
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "$(git log -1 --format=%B "$GITHUB_REF_NAME" | grep -v -e '^Co-Authored-By:' -e '^Claude-Session:')"

@@ -20,6 +20,7 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
     UnitOfTime,
+    UnitOfVolume,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -81,6 +82,23 @@ def _prijs(key: str, veld: str) -> EmsSensorDescription:
 
 AUTO = ("auto", "aanwezig")
 BOILER = ("boiler", "aanwezig")
+GAS = ("gas", "aanwezig")
+WATER = ("water", "aanwezig")
+
+
+def _meter(key: str, groep: str, veld: str, eenheid: str, device_class, alleen_als) -> EmsSensorDescription:
+    # Verbruik vandaag (HomeWizard-meters): om middernacht terug naar 0.
+    return EmsSensorDescription(
+        key=key, waarde=_pad(groep, veld), native_unit_of_measurement=eenheid, device_class=device_class,
+        state_class=SensorStateClass.TOTAL_INCREASING, alleen_als=alleen_als)
+
+
+def _gemiddeld(key: str, groep: str, veld: str, eenheid: str, alleen_als) -> EmsSensorDescription:
+    # Gemiddelde dag over vier weken: geen teller, dus geen gas-/water-device_class
+    # (die staat in HA alleen bij een teller).
+    return EmsSensorDescription(
+        key=key, waarde=_pad(groep, veld), native_unit_of_measurement=eenheid,
+        state_class=SensorStateClass.MEASUREMENT, alleen_als=alleen_als)
 
 SENSOREN: tuple[EmsSensorDescription, ...] = (
     _vermogen("vermogen_zon", "zon"),
@@ -129,6 +147,10 @@ SENSOREN: tuple[EmsSensorDescription, ...] = (
     EmsSensorDescription(
         key="besparing_vandaag", waarde=_pad("besparing_vandaag_eur"), native_unit_of_measurement="EUR",
         device_class=SensorDeviceClass.MONETARY, suggested_display_precision=2),
+    _meter("gas_vandaag", "gas", "vandaag_m3", UnitOfVolume.CUBIC_METERS, SensorDeviceClass.GAS, GAS),
+    _gemiddeld("gas_gemiddeld_dag", "gas", "gemiddeld_dag_m3", UnitOfVolume.CUBIC_METERS, GAS),
+    _meter("water_vandaag", "water", "vandaag_l", UnitOfVolume.LITERS, SensorDeviceClass.WATER, WATER),
+    _gemiddeld("water_gemiddeld_dag", "water", "gemiddeld_dag_l", UnitOfVolume.LITERS, WATER),
     EmsSensorDescription(
         key="data_leeftijd", waarde=_pad("data_leeftijd_s"), native_unit_of_measurement=UnitOfTime.SECONDS,
         device_class=SensorDeviceClass.DURATION, entity_category=EntityCategory.DIAGNOSTIC),

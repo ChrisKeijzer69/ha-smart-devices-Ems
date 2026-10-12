@@ -13,6 +13,8 @@ STATUS_PAD = "/api/apparaat/status"
 # De portal ververst per halve minuut; vaker vragen heeft geen zin.
 SCAN_INTERVAL = timedelta(seconds=30)
 
-VERSIE = "0.2.2"          # gelijk houden met manifest.json
-KAART_BESTAND = "smart-devices-ems-huis.js"
-KAART_URL = f"/{DOMAIN}/{KAART_BESTAND}"
+VERSIE = "0.3.0"          # gelijk houden met manifest.json
+# De dashboardkaarten in www/: het huis, en het scherm voor een Google Nest Hub
+# (dat de huiskaart gebruikt voor zijn weergave "huis").
+KAART_BESTANDEN = ("smart-devices-ems-huis.js", "smart-devices-ems-hub.js")
+KAART_URLS = tuple(f"/{DOMAIN}/{b}" for b in KAART_BESTANDEN)

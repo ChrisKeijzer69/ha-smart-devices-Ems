@@ -42,6 +42,87 @@ Had je hem daar al met de hand toegevoegd, dan neemt ze die over. Zie je na een 
 YAML-modus, voeg de kaart dan zelf toe onder `lovelace: resources:` met URL
 `/smart_devices_ems/smart-devices-ems-huis.js` en type `module`.
 
+## Scherm voor een Google Nest Hub
+
+Een volledig scherm van 1024 × 600 voor een Nest Hub, met twee weergaven:
+
+- **ringen**: in de stijl van het HomeWizard Energy Display. Een grote ring met het net nu en wat je
+  vandaag hebt teruggeleverd (↑) en afgenomen (↓), ringen voor de accustand en de zon, en
+  rechts de stroomprijs (het bolletje staat tussen de laagste en hoogste prijs van vandaag), de
+  besparing van vandaag en je auto (of boiler, of de zon vandaag);
+  met een HomeWizard gas- of watermeter staan gas en water er apart rechts naast, met een
+  ring die vol is bij je gemiddelde dag van de afgelopen vier weken;
+- **huis**: de huistekening met ernaast wat de AI doet, waar de stroom vandaan komt en de prijs.
+
+Een gecast dashboard reageert niet op aanraken, dus dit is een kijkscherm zonder knoppen. Op
+een groter scherm (Hub Max, tablet) schaalt het mee.
+
+**1. Dashboard maken.** *Instellingen → Dashboards → Dashboard toevoegen* → *Nieuw dashboard
+vanaf nul*, naam bijvoorbeeld *EMS Hub* (adres `ems-hub`). Open het, kies *Bewerken* →
+*Raw-configuratie-editor* en plak:
+
+```yaml
+views:
+  - title: Ringen
+    path: ringen
+    type: panel
+    cards:
+      - type: custom:smart-devices-ems-hub
+        weergave: ringen
+  - title: Huis
+    path: huis
+    type: panel
+    cards:
+      - type: custom:smart-devices-ems-hub
+        weergave: huis
+```
+
+Gebruik altijd `type: panel`: dan vult de kaart het hele scherm. Instellingen van de kaart:
+
+- `weergave`: `ringen` (standaard) of `huis`;
+- `thema`: `donker` (standaard), `licht`, of `ha` voor de kleuren van je Home Assistant-thema;
+- `net_max_w` en `zon_max_w`: bij hoeveel watt de ring van het net en van de zon vol is
+  (standaard 6000 en 5000 W; zet de zon op het piekvermogen van je panelen);
+- `beweging: false` om de stroombolletjes in het huis stil te zetten (rustiger, en zuiniger
+  voor de processor van de Hub);
+- `apparaat:` alleen bij meer dan één gekoppelde installatie.
+
+**2. Op de Hub zetten.** Home Assistant moet via **https van buiten** bereikbaar zijn (Nabu
+Casa of een eigen domein, ingevuld onder *Instellingen → Systeem → Netwerk*): de Hub haalt het
+dashboard via Google op. De Nest Hub verschijnt via de integratie *Google Cast* als
+`media_player`. Starten doe je met de actie `cast.show_lovelace_view`:
+
+```yaml
+action: cast.show_lovelace_view
+data:
+  entity_id: media_player.nest_hub      # de naam van jouw Hub
+  dashboard_path: ems-hub
+  view_path: ringen                     # of: huis
+```
+
+De Hub stopt een cast na een tijdje vanzelf. Een automatisering die hem opnieuw start zodra de
+Hub niets doet, houdt het scherm aan zonder je muziek te onderbreken:
+
+```yaml
+alias: EMS op de Nest Hub
+triggers:
+  - trigger: time_pattern
+    minutes: /5
+conditions:
+  - condition: state
+    entity_id: media_player.nest_hub
+    state: ["off", "idle"]
+  - condition: time
+    after: "07:00:00"
+    before: "23:00:00"
+actions:
+  - action: cast.show_lovelace_view
+    data:
+      entity_id: media_player.nest_hub
+      dashboard_path: ems-hub
+      view_path: ringen
+```
+
 ## Sensoren
 
 | Groep | Sensoren |
@@ -53,10 +134,12 @@ YAML-modus, voeg de kaart dan zelf toe onder `lovelace: resources:` met URL
 | Prijs (€/kWh) | nu, terugleveren nu, over een uur, laagste en hoogste van vandaag (met tijdstip) |
 | AI | wat hij nu doet (tekst en actie), wat hij straks doet en vanaf wanneer |
 | Vandaag (kWh) | zon, netafname, teruglevering, accu geladen, accu ontladen, huis, auto, boiler |
+| Gas en water | vandaag (m³ / liter) en gemiddelde dag over vier weken; alleen met een HomeWizard P1- of watermeter |
 | Overig | besparing vandaag (€), slimme sturing aan, gegevens verouderd, leeftijd gegevens |
 
 **Energy-dashboard:** gebruik *Netafname vandaag*, *Teruglevering vandaag*, *Zon vandaag*,
-*Accu geladen vandaag* en *Accu ontladen vandaag*. Gebruik *Stroomprijs nu* als prijs.
+*Accu geladen vandaag* en *Accu ontladen vandaag*. Gebruik *Stroomprijs nu* als prijs. Voor gas en
+water: *Gas vandaag* en *Water vandaag*.
 
 De gegevens worden elke 30 seconden opgehaald.
 

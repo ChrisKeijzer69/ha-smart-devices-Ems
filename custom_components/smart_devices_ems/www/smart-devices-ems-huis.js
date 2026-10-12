@@ -205,7 +205,9 @@ class SmartDevicesEmsHuis extends HTMLElement {
       return;
     }
     this._clip = this._clip || "boiler-vat-" + Math.random().toString(36).slice(2, 8);
-    this._reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    // beweging: false (bv. de Google Hub, trage processor): bolletjes staan stil op hun draad.
+    this._reduce = this._config?.beweging === false
+      || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const accuHoogte = Math.max(0, Math.min(100, s.soc ?? 0)) / 100 * 34;
     const tvAan = s.huis > 150;
     const licht = Math.min(1, Math.max(0, s.huis) / 2000);
@@ -263,7 +265,7 @@ class SmartDevicesEmsHuis extends HTMLElement {
 <style>${CSS}</style>
 <ha-card>
   ${titel ? `<h1 class="card-header">${esc(titel)}</h1>` : ""}
-  <div class="inhoud ${s.stil ? "huis-stil" : ""}">
+  <div class="inhoud ${s.stil ? "huis-stil" : ""} ${this._reduce ? "rust" : ""}">
   <svg viewBox="0 0 360 316" role="img" aria-label="${esc("Stroom in huis: " + aria)}">
     <polygon points="70,130 185,64 300,130" style="fill: var(--k-line)" />
     <rect x="82" y="130" width="206" height="122" style="fill: var(--k-fill); stroke: var(--k-line3)" />
@@ -344,7 +346,7 @@ class SmartDevicesEmsHuis extends HTMLElement {
       <text x="6" y="306.5" font-size="10" font-weight="600" fill="${l.kleur}">${esc(l.pil)}</text>
     </g>`).join("")}
   </svg>
-  ${mix.map((m) => `<div class="mix">
+  ${this._config?.mix === false ? "" : mix.map((m) => `<div class="mix">
     <span class="mix-titel">${m.titel}</span>
     <div class="mix-balk">${m.delen.map((d) => `<i class="mix-deel" style="flex-grow:${d.w};background-color:${d.kleur}"></i>`).join("")}</div>
     <div class="mix-legenda">${m.delen.map((d) => `<span><b style="background:${d.kleur}"></b>${d.naam} ${d.pct}%</span>`).join("") || "<span>niets</span>"}</div>
@@ -363,6 +365,10 @@ class SmartDevicesEmsHuis extends HTMLElement {
     this._vorige = tijd;
     const s = this._stand;
     if (!s || s.leeg || !this._deeltjesG) return;
+    if (this._reduce) {                             // stilstaand: alleen na een nieuwe stand
+      if (this._stilGetekend === this._deeltjesG) return;
+      this._stilGetekend = this._deeltjesG;
+    }
     this._fasen = this._fasen || {};
     let n = 0;
     if (!s.stil) {
@@ -432,7 +438,8 @@ svg { width: 100%; height: auto; display: block; font-family: inherit; }
 @keyframes tv-flikker { 0%, 100% { opacity: 1; } 37% { opacity: .82; } 41% { opacity: 1; } 73% { opacity: .9; } }
 @keyframes golfjes { to { transform: translateX(-10px); } }
 .huis-stil { filter: grayscale(1); opacity: .6; }
-.huis-stil .mix-deel, .huis-stil .boiler-golf, .huis-stil .tv-beeld { animation: none; }
+.huis-stil .mix-deel, .huis-stil .boiler-golf, .huis-stil .tv-beeld,
+.rust .mix-deel, .rust .boiler-golf, .rust .tv-beeld { animation: none; }
 @media (prefers-reduced-motion: reduce) { .mix-deel, .boiler-golf, .tv-beeld { animation: none; } }
 `;
 

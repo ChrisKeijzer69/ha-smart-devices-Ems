@@ -9,10 +9,11 @@ import pytest
 from homeassistant.components.lovelace.resources import ResourceStorageCollection
 
 from custom_components.smart_devices_ems import _registreer_kaart
-from custom_components.smart_devices_ems.const import KAART_URL, VERSIE
+from custom_components.smart_devices_ems.const import KAART_BESTANDEN, KAART_URLS, VERSIE
 
 ROOT = Path(__file__).resolve().parents[1]
-URL = f"{KAART_URL}?v={VERSIE}"
+KAART_URL = KAART_URLS[0]
+URLS = [f"{u}?v={VERSIE}" for u in KAART_URLS]
 
 
 async def _bronnen(hass, items=()):
@@ -38,9 +39,10 @@ async def test_nieuwe_bron(hass, vorm):
         await _registreer_kaart(hass)
         await _registreer_kaart(hass)
     js.assert_not_called()
-    assert [(b["type"], b["url"]) for b in res.async_items()] == [("module", URL)]
-    (cfg,), = hass.http.async_register_static_paths.call_args.args
-    assert cfg.url_path == KAART_URL and Path(cfg.path).is_file()
+    assert [(b["type"], b["url"]) for b in res.async_items()] == [("module", u) for u in URLS]
+    (cfgs,) = hass.http.async_register_static_paths.call_args.args
+    assert [c.url_path for c in cfgs] == list(KAART_URLS)
+    assert all(Path(c.path).is_file() for c in cfgs)
 
 
 @pytest.mark.echte_kaart
@@ -50,7 +52,7 @@ async def test_handmatige_bron_overgenomen_en_dubbel_opgeruimd(hass):
     hass.data["lovelace"] = {"resources": res}
     with patch("custom_components.smart_devices_ems.add_extra_js_url"):
         await _registreer_kaart(hass)
-    assert sorted(b["url"] for b in res.async_items()) == ["/andere/kaart.js", URL]
+    assert sorted(b["url"] for b in res.async_items()) == sorted(["/andere/kaart.js", *URLS])
 
 
 @pytest.mark.echte_kaart
@@ -59,7 +61,7 @@ async def test_zonder_bronnenlijst_extra_module(hass):
     hass.data["lovelace"] = {"resources": SimpleNamespace(async_items=lambda: [])}
     with patch("custom_components.smart_devices_ems.add_extra_js_url") as js:
         await _registreer_kaart(hass)
-    js.assert_called_once_with(hass, URL)
+    assert [c.args for c in js.call_args_list] == [(hass, u) for u in URLS]
 
 
 def test_versie_gelijk_aan_manifest():
@@ -67,7 +69,8 @@ def test_versie_gelijk_aan_manifest():
     assert m["version"] == VERSIE
 
 
-def test_kaart_is_ascii():
+@pytest.mark.parametrize("bestand", KAART_BESTANDEN)
+def test_kaart_is_ascii(bestand):
     # HA levert het bestand zonder charset; met niet-ASCII-tekens kan een browser
     # het als Latin-1 lezen (gezien op een iPad, 11 okt 2026).
-    (ROOT / "custom_components/smart_devices_ems/www/smart-devices-ems-huis.js").read_bytes().decode("ascii")
+    (ROOT / "custom_components/smart_devices_ems/www" / bestand).read_bytes().decode("ascii")

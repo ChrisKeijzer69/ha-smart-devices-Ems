@@ -136,6 +136,18 @@
       },
       "data_leeftijd": {
         "name": "Leeftijd gegevens"
+      },
+      "gas_vandaag": {
+        "name": "Gas vandaag"
+      },
+      "gas_gemiddeld_dag": {
+        "name": "Gas gemiddelde dag"
+      },
+      "water_vandaag": {
+        "name": "Water vandaag"
+      },
+      "water_gemiddeld_dag": {
+        "name": "Water gemiddelde dag"
       }
     },
     "binary_sensor": {

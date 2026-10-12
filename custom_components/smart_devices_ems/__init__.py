@@ -1,4 +1,5 @@
-"""Smart Devices EMS: sensoren uit de EMS-portal (alleen lezen), plus de kaart "Nu in huis"."""
+"""Smart Devices EMS: sensoren uit de EMS-portal (alleen lezen), plus de dashboardkaarten
+("Nu in huis" en het scherm voor een Google Nest Hub)."""
 
 from __future__ import annotations
 
@@ -11,7 +12,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, KAART_BESTAND, KAART_URL, VERSIE
+from .const import DOMAIN, KAART_BESTANDEN, KAART_URLS, VERSIE
 from .coordinator import EmsCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ type EmsConfigEntry = ConfigEntry[EmsCoordinator]
 
 
 async def _registreer_kaart(hass: HomeAssistant) -> None:
-    """Zet de dashboardkaart klaar, één keer per HA-start.
+    """Zet de dashboardkaarten klaar, één keer per HA-start.
 
     Als dashboardbron (Instellingen → Dashboards → Bronnen) en bewust niet alleen via
     add_extra_js_url: die zet de kaart in index.html, maar de service worker van de
@@ -34,15 +35,17 @@ async def _registreer_kaart(hass: HomeAssistant) -> None:
     if hass.data.get(f"{DOMAIN}_kaart"):
         return
     hass.data[f"{DOMAIN}_kaart"] = True
-    pad = Path(__file__).parent / "www" / KAART_BESTAND
-    await hass.http.async_register_static_paths([StaticPathConfig(KAART_URL, str(pad), True)])
-    url = f"{KAART_URL}?v={VERSIE}"
-    try:
-        if await _als_dashboardbron(hass, url):
-            return
-    except Exception:  # noqa: BLE001 — de bron is een gemak, de sensoren moeten altijd werken
-        _LOGGER.exception("Kaart niet als dashboardbron toegevoegd; terugval op extra module")
-    add_extra_js_url(hass, url)
+    www = Path(__file__).parent / "www"
+    await hass.http.async_register_static_paths([
+        StaticPathConfig(u, str(www / b), True) for u, b in zip(KAART_URLS, KAART_BESTANDEN)])
+    for kaart_url in KAART_URLS:
+        url = f"{kaart_url}?v={VERSIE}"
+        try:
+            if await _als_dashboardbron(hass, kaart_url, url):
+                continue
+        except Exception:  # noqa: BLE001 — de bron is een gemak, de sensoren moeten altijd werken
+            _LOGGER.exception("Kaart niet als dashboardbron toegevoegd; terugval op extra module")
+        add_extra_js_url(hass, url)
 
 
 def _bronnen(hass: HomeAssistant):
@@ -55,14 +58,14 @@ def _bronnen(hass: HomeAssistant):
     return res if hasattr(res, "async_create_item") else None
 
 
-async def _als_dashboardbron(hass: HomeAssistant, url: str) -> bool:
+async def _als_dashboardbron(hass: HomeAssistant, kaart_url: str, url: str) -> bool:
     """Voegt de kaart toe als bron, of zet een bestaande (ook een met de hand
     toegevoegde) op de huidige versie. False als dat niet kan (YAML-modus)."""
     res = _bronnen(hass)
     if res is None:
         return False
     await res.async_get_info()                 # laadt de lijst als dat nog niet gebeurd is
-    eigen = [b for b in res.async_items() if str(b.get("url", "")).split("?")[0] == KAART_URL]
+    eigen = [b for b in res.async_items() if str(b.get("url", "")).split("?")[0] == kaart_url]
     if not eigen:
         await res.async_create_item({"res_type": "module", "url": url})
         _LOGGER.info("Kaart toegevoegd als dashboardbron: %s", url)

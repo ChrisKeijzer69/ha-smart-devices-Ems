@@ -25,6 +25,8 @@ STATUS = {
     "vandaag_kwh": {"zon": 10.11, "net_afname": 37.64, "net_terug": 0.91, "accu_in": 38.0, "accu_uit": 1.73,
                     "huis": 10.57, "auto": 0.0, "boiler": None},
     "besparing_vandaag_eur": 2.36,
+    "gas": {"aanwezig": True, "vandaag_m3": 1.844, "gemiddeld_dag_m3": 2.612},
+    "water": {"aanwezig": False, "vandaag_l": None, "gemiddeld_dag_l": None},
 }
 
 
@@ -51,6 +53,12 @@ async def test_instellen_gelukt(hass, aioclient_mock):
     assert s.get("binary_sensor.fam_test_smart_control").state == "on"
     # Geen boiler: geen boilersensoren.
     assert s.get("sensor.fam_test_boiler_temperature") is None
+    # Gas wel, water niet.
+    gas = s.get("sensor.fam_test_gas_today")
+    assert gas.state == "1.844" and gas.attributes["device_class"] == "gas"
+    assert gas.attributes["unit_of_measurement"] == "m\u00b3"
+    assert s.get("sensor.fam_test_gas_average_day").state == "2.612"
+    assert s.get("sensor.fam_test_water_today") is None
 
     entry = hass.config_entries.async_entries(DOMAIN)[0]
     assert await hass.config_entries.async_unload(entry.entry_id)

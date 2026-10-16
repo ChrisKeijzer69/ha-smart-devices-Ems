@@ -156,6 +156,12 @@
       },
       "sturing_aan": {
         "name": "Slimme sturing"
+      },
+      "boiler_in_huis": {
+        "name": "Boiler in huisje"
+      },
+      "boiler_uit_maar_aan": {
+        "name": "Boiler op uit maar aan"
       }
     }
   }

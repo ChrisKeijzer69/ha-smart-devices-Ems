@@ -18,6 +18,8 @@ const ACTIE = {
   wacht: "#9AA39E", auto: "#22A355", boiler: "#0EA5C6",
 };
 const MAAN = "#E9E4C9";
+// Boiler op "uit" die toch stroom trekt: oranje pil (zelfde als de portal en de schermen).
+const WAARSCHUW = "#F97316";
 const BRON_KLEUR = { zon: ACTIE.zon, accu: ACTIE.levert, net: ACTIE.net };
 const AUTO_PIL = {
   kabel_los: "kabel los", aangesloten: "aangesloten", laadt: "laadt",
@@ -97,7 +99,7 @@ const ALLE_DRADEN = {
   tv: [[257, 204], [257, 178], [204, 178]],
   boiler: [[191, 126], [191, 160]],
   accu: [[122, 192], [122, 184], [170, 184]],
-  auto: [[64, 236], [72, 236], [72, 246], [178, 246], [178, 196]],
+  auto: [[63, 236], [72, 236], [72, 246], [178, 246], [178, 196]],
   net: [[300, 246], [196, 246], [196, 196]],
 };
 const lijnD = (pts) => "M" + pts.map((p) => p.join(" ")).join(" L");
@@ -134,7 +136,9 @@ function leesStand(hass, ent, config) {
   const tekst = (k) => st(k)?.state;
   const heeftAuto = !!ent.vermogen_auto;
   const slim = !!ent.auto_status;
-  const heeftBoiler = !!ent.vermogen_boiler;
+  // Boiler op "uit" niet in het huisje, tenzij hij toch stroom trekt (16 okt 2026, zoals de portal).
+  const heeftBoiler = !!ent.vermogen_boiler && tekst("boiler_in_huis") !== "off";
+  const boilerUitMaarAan = tekst("boiler_uit_maar_aan") === "on";
   const auto = getal("vermogen_auto") ?? 0;
   const boiler = getal("vermogen_boiler") ?? 0;
   const actie = tekst("ai_nu_actie");
@@ -152,10 +156,13 @@ function leesStand(hass, ent, config) {
     accuKleur: ACTIE[actie] ?? ACTIE.wacht,
     heeftZon: config.zon !== false,
     heeftAuto, heeftBoiler,
-    autoNaam: slim && autoSoc != null ? `Auto \u00b7 ${Math.round(autoSoc)} %` : "Auto",
+    autoNaam: "Auto",
+    // Stand van de auto-accu, in het accuutje in de auto (alleen slimme paal).
+    autoSoc: slim ? autoSoc : null,
     autoPil: (slim && AUTO_PIL[tekst("auto_status")]) || (auto > 50 ? "laadt" : "wacht"),
     autoGeschat: heeftAuto && !slim,
-    boilerPil: boiler > 50 ? "warmt op" : "uit",
+    boilerPil: boilerUitMaarAan ? "staat op uit" : boiler > 50 ? "warmt op" : "uit",
+    boilerUitMaarAan,
     stil: onbekend || tekst("verouderd") === "on",
     lat: hass.config?.latitude || 0,
     lon: hass.config?.longitude || 0,
@@ -223,12 +230,12 @@ class SmartDevicesEmsHuis extends HTMLElement {
     this._draden = draden;
 
     const onder = [];
-    if (s.heeftAuto) onder.push({ naam: s.autoNaam, x: 6, waarde: (s.autoGeschat && s.auto > 0 ? "\u2248 " : "") + fmtW(s.auto),
+    if (s.heeftAuto) onder.push({ naam: s.autoNaam, x: -46, waarde: (s.autoGeschat && s.auto > 0 ? "\u2248 " : "") + fmtW(s.auto),
       pil: s.autoPil, kleur: s.auto > 50 ? ACTIE.auto : ACTIE.wacht });
     onder.push({ naam: "Accu", x: 100, waarde: fmtW(s.bat),
       pil: s.bat > 50 ? "laadt" : s.bat < -50 ? "levert" : "wacht", kleur: s.accuKleur });
     if (s.heeftBoiler) onder.push({ naam: "Boiler" + (s.temp != null ? ` \u00b7 ${Math.round(s.temp)} \u00b0C` : ""), x: 140, dy: -246,
-      waarde: fmtW(s.boiler), pil: s.boilerPil, kleur: s.boiler > 50 ? ACTIE.boiler : ACTIE.wacht });
+      waarde: fmtW(s.boiler), pil: s.boilerPil, kleur: s.boilerUitMaarAan ? WAARSCHUW : s.boiler > 50 ? ACTIE.boiler : ACTIE.wacht });
     onder.push({ naam: "Net", x: 290, waarde: fmtW(s.grid),
       pil: s.grid > 50 ? "afname" : s.grid < -50 ? "terug" : "geen",
       kleur: s.grid > 50 ? ACTIE.net : s.grid < -50 ? ACTIE.levert : ACTIE.wacht });
@@ -266,11 +273,13 @@ class SmartDevicesEmsHuis extends HTMLElement {
 <ha-card>
   ${titel ? `<h1 class="card-header">${esc(titel)}</h1>` : ""}
   <div class="inhoud ${s.stil ? "huis-stil" : ""} ${this._reduce ? "rust" : ""}">
-  <svg viewBox="0 0 360 316" role="img" aria-label="${esc("Stroom in huis: " + aria)}">
+  <svg viewBox="0 0 412 316" role="img" aria-label="${esc("Stroom in huis: " + aria)}">
+    <!-- Alles behalve de auto 52 naar rechts, zoals de portal (16 okt 2026) -->
+    <g transform="translate(52 0)">
     <polygon points="70,130 185,64 300,130" style="fill: var(--k-line)" />
     <rect x="82" y="130" width="206" height="122" style="fill: var(--k-fill); stroke: var(--k-line3)" />
     ${s.heeftZon ? `<polygon points="106,116 176,76 176,88 106,128" fill="${s.pv > 50 && !s.donker ? "#2C3F6B" : "#4A556B"}" />` : ""}
-    <line x1="0" y1="252" x2="360" y2="252" stroke-width="2" style="stroke: var(--k-line3)" />
+    <line x1="-52" y1="252" x2="360" y2="252" stroke-width="2" style="stroke: var(--k-line3)" />
     <g stroke-width="1" stroke-dasharray="2 3" fill="none" opacity="0.7" style="stroke: var(--k-muted)">
       ${s.heeftZon ? `<path d="M22 54 V122 H104" />` : ""}
       <path d="M245 52 V128" />
@@ -298,7 +307,7 @@ class SmartDevicesEmsHuis extends HTMLElement {
     <rect x="116" y="192" width="12" height="5" rx="1.5" style="fill: var(--k-line3)" />
     <rect x="100" y="196" width="44" height="40" rx="5" style="fill: var(--k-card); stroke: var(--k-line3)" />
     <rect x="103" y="${199 + 34 - accuHoogte}" width="38" height="${accuHoogte}" rx="3" fill="${s.accuKleur}" />
-    <text x="122" y="221" font-size="12" font-weight="700" text-anchor="middle" class="cijfer"
+    <text x="122" y="221.5" font-size="14" font-weight="700" text-anchor="middle" class="cijfer"
           style="fill: ${accuHoogte > 20 ? "#fff" : "var(--k-ink)"}">${s.soc != null ? Math.round(s.soc) + "%" : "\u2014"}</text>
     ${s.heeftBoiler ? `<g>
       <defs><clipPath id="${this._clip}"><rect x="183" y="99" width="16" height="24" rx="7" /></clipPath></defs>
@@ -310,12 +319,6 @@ class SmartDevicesEmsHuis extends HTMLElement {
         <path class="boiler-golf" opacity="0.85" style="fill: ${boilerKleur}"
               d="M173 104 q2.5 -2 5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 V127 H173 Z" />
       </g></g>` : ""}
-    ${s.heeftAuto ? `<g transform="translate(2 216)" opacity="${s.auto > 50 ? 1 : 0.45}">
-      <path d="M4 22 L4 14 Q6 9 12 8 L20 2 Q22 1 26 1 L42 1 Q46 1 49 4 L55 9 Q62 10 63 15 L63 22 Z" fill="${ACTIE.auto}" />
-      <rect x="22" y="4" width="22" height="7" rx="2" opacity="0.7" style="fill: var(--k-fill)" />
-      <circle cx="16" cy="23" r="6" style="fill: var(--k-ink)" /><circle cx="51" cy="23" r="6" style="fill: var(--k-ink)" />
-      <circle cx="16" cy="23" r="2.4" style="fill: var(--k-card)" /><circle cx="51" cy="23" r="2.4" style="fill: var(--k-card)" />
-    </g>` : ""}
     <circle cx="300" cy="246" r="3.5" stroke-width="1.5" style="fill: var(--k-card); stroke: var(--k-muted)" />
     ${s.heeftZon || s.donker ? `<g transform="translate(22 30)">${!s.donker ? `
       <g opacity="${s.pv > 50 ? 1 : 0.35}">
@@ -335,16 +338,27 @@ class SmartDevicesEmsHuis extends HTMLElement {
       </g>`}</g>` : ""}
     ${s.heeftZon ? `<g>
       <text x="46" y="24" font-size="11" style="fill: var(--k-muted)">Zon</text>
-      <text x="46" y="42" font-size="15" font-weight="700" class="cijfer" style="fill: var(--k-ink)">${fmtW(s.pv)}</text>
+      <text x="46" y="42" font-size="14" font-weight="700" class="cijfer" style="fill: var(--k-ink)">${fmtW(s.pv)}</text>
     </g>` : ""}
     <text x="238" y="24" font-size="11" style="fill: var(--k-muted)">Huis</text>
-    <text x="238" y="42" font-size="15" font-weight="700" class="cijfer" style="fill: var(--k-ink)">${fmtW(s.huis)}</text>
+    <text x="238" y="42" font-size="14" font-weight="700" class="cijfer" style="fill: var(--k-ink)">${fmtW(s.huis)}</text>
     ${onder.map((l) => `<g transform="translate(${l.x} ${l.dy ?? 0})">
       <text y="270" font-size="11" style="fill: var(--k-muted)">${esc(l.naam)}</text>
       <text y="287" font-size="14" font-weight="700" class="cijfer" style="fill: var(--k-ink)">${esc(l.waarde)}</text>
       <rect y="295" height="16" rx="4" fill="none" width="${l.pil.length * 6.3 + 13}" stroke="${l.kleur}" />
       <text x="6" y="306.5" font-size="10" font-weight="600" fill="${l.kleur}">${esc(l.pil)}</text>
     </g>`).join("")}
+    </g>
+    ${s.heeftAuto ? `<g transform="translate(2 200) scale(1.8)" opacity="${s.auto > 50 ? 1 : 0.7}">
+      <path d="M4 22 L4 14 Q6 9 12 8 L20 2 Q22 1 26 1 L42 1 Q46 1 49 4 L55 9 Q62 10 63 15 L63 22 Z" fill="${ACTIE.auto}" />
+      ${s.autoSoc != null ? `<rect x="17" y="5.5" width="30" height="11.5" rx="2.5" fill="#000" fill-opacity="0.28" />
+      <rect x="47" y="9" width="2" height="4.5" rx="0.8" fill="#000" fill-opacity="0.28" />
+      <rect x="18.5" y="7" width="${Math.max(0.5, 27 * Math.max(0, Math.min(100, s.autoSoc)) / 100)}" height="8.5" rx="1.8" fill="#16A34A" />
+      <text x="32" y="14.1" font-size="7.78" font-weight="700" text-anchor="middle" class="cijfer" fill="#fff">${Math.round(Math.max(0, Math.min(100, s.autoSoc)))}%</text>`
+      : `<rect x="22" y="4" width="22" height="7" rx="2" opacity="0.7" style="fill: var(--k-fill)" />`}
+      <circle cx="16" cy="23" r="6" style="fill: var(--k-ink)" /><circle cx="51" cy="23" r="6" style="fill: var(--k-ink)" />
+      <circle cx="16" cy="23" r="2.4" style="fill: var(--k-card)" /><circle cx="51" cy="23" r="2.4" style="fill: var(--k-card)" />
+    </g>` : ""}
   </svg>
   ${this._config?.mix === false ? "" : mix.map((m) => `<div class="mix">
     <span class="mix-titel">${m.titel}</span>

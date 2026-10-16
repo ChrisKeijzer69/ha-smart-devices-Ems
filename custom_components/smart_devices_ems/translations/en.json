@@ -156,6 +156,12 @@
       },
       "sturing_aan": {
         "name": "Smart control"
+      },
+      "boiler_in_huis": {
+        "name": "Boiler in house drawing"
+      },
+      "boiler_uit_maar_aan": {
+        "name": "Boiler off but drawing power"
       }
     }
   }

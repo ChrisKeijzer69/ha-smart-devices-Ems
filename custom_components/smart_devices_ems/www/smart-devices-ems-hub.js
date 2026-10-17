@@ -19,7 +19,7 @@ const DOMEIN = "smart_devices_ems";
 const B = 1024, H = 600;
 const KLEUR = {
   levert: "#0F9D6B", zon: "#F59E0B", net: "#3B5BDB",
-  wacht: "#9AA39E", auto: "#22A355", boiler: "#0EA5C6", huis: "#94A3B8",
+  wacht: "#9AA39E", auto: "#22A355", boiler: "#0EA5C6", huis: "var(--h-ink)",
 };
 // Zelfde tokens als de klantweergave van de portal (styles/klant.css).
 const THEMA = {
@@ -107,8 +107,9 @@ function mixen(s) {
       { naam: "net", w: Math.max(0, s.grid), kleur: KLEUR.net },
     ]) },
     { titel: "en gaat naar", delen: balk([
+      // Huis in de tekstkleur en auto lichtgroen, zoals "Nu in huis" in de portal (16 okt 2026).
       { naam: "huis", w: Math.max(0, s.huis), kleur: KLEUR.huis },
-      { naam: "auto", w: Math.max(0, s.auto ?? 0), kleur: KLEUR.auto },
+      { naam: "auto", w: Math.max(0, s.auto ?? 0), kleur: RING.auto },
       { naam: "boiler", w: Math.max(0, s.boiler ?? 0), kleur: KLEUR.boiler },
       { naam: "accu", w: Math.max(0, s.bat), kleur: ACTIE_KLEUR[s.aiActie] ?? KLEUR.levert },
       { naam: "terug naar net", w: Math.max(0, -s.grid), kleur: KLEUR.levert },

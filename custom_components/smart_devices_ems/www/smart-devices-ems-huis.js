@@ -252,8 +252,11 @@ class SmartDevicesEmsHuis extends HTMLElement {
         { naam: "net", w: Math.max(0, s.grid), kleur: ACTIE.net },
       ]),
       balk("en gaat naar", [
-        { naam: "huis", w: Math.max(0, s.huis), kleur: "#94A3B8" },
-        { naam: "auto", w: s.heeftAuto ? Math.max(0, s.auto) : 0, kleur: ACTIE.auto },
+        // Huis in de tekstkleur en auto lichtgroen, zoals de portal (HuisStroom.vue, 16 okt
+        // 2026): met grijs was huis niet van de boiler te onderscheiden bij kleurenblindheid,
+        // en ACTIE.auto is hetzelfde groen als "terug naar net".
+        { naam: "huis", w: Math.max(0, s.huis), kleur: "var(--k-ink)" },
+        { naam: "auto", w: s.heeftAuto ? Math.max(0, s.auto) : 0, kleur: "#4ADE80" },
         { naam: "boiler", w: s.heeftBoiler ? Math.max(0, s.boiler) : 0, kleur: ACTIE.boiler },
         { naam: "accu", w: Math.max(0, s.bat), kleur: s.accuKleur },
         { naam: "terug naar net", w: Math.max(0, -s.grid), kleur: ACTIE.levert },
@@ -443,10 +446,8 @@ svg { width: 100%; height: auto; display: block; font-family: inherit; }
 .mix-deel {
   display: block; height: 100%; min-width: 0;
   background-image: repeating-linear-gradient(110deg, rgba(255,255,255,0) 0 8px, rgba(255,255,255,.35) 8px 11px);
-  background-size: 40px 100%;
-  animation: mix-strepen 1.4s linear infinite;
+  background-size: 40px 100%;  /* strepen staan stil, zoals de portal (16 okt 2026) */
 }
-@keyframes mix-strepen { to { background-position: 40px 0; } }
 .boiler-golf { animation: golfjes 2.4s linear infinite; }
 .tv-beeld { animation: tv-flikker 3.1s steps(1) infinite; }
 @keyframes tv-flikker { 0%, 100% { opacity: 1; } 37% { opacity: .82; } 41% { opacity: 1; } 73% { opacity: .9; } }
